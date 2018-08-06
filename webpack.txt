@@ -1,0 +1,213 @@
+webpack的安装和使用
+
+1、新建目录（文件夹），要求全英文目录。
+2、目录中新建src文件夹，里面放index.js和index.html，文件内容随意，不要太复杂。
+3、进入新建目录，运行npm init。
+4、安装webpack，npm install --save-d webpack
+5、安装手脚架，npm install -g webpack-cli（全局）
+               npm install --save-d webpack-cli（局部）
+6、使用webpack打包发布，默认入口文件是'./src/index.js'，输出路径是'./dist/'
+   webpack --mode development
+   如果'webpack'不是内部或外部命令，也不是可运行的程序或批处理文件，可执行 npx webpack --mode development
+7、在dist目录查看发布结果，使用node运行生成的main.js
+8、做快捷方式build（名字可以随意自定）
+   在package.json文件的script属性下加：
+   "build":"webpack --mode development"，这样，以后运行npm run build 就相当于运行webpack --mode development
+9、项目根目录下创建webpack配置文件，配置文件为：webpack.config.js
+   const webpack=require('webpack');
+   const path=require('path');
+
+   module.exports = {
+	entry:'./src/index.js',/*入口文件*/
+	output:{
+		path:path.resolve(__dirname,'dist'),
+		filename:'bundle.js'/*表示输出的js文件名*/
+	}
+   }
+
+10、多入口，一出口：
+    entry:['./src/index.js','./src/index2.js']
+
+    多入口，多出口：
+    entry:{
+	   index:'./src/index.js',
+	   es6:'./src/index2.js //打包完的文件名为：es6				
+     }
+     output:
+
+11、安装插件，npm install --save-d html-webpack-plugin
+12、在webpack.config.js文件中引入插件const HtmlWebpackPlugin=require('html-webpack-plugin');
+    配置插件：
+    plugins: [
+	new HtmlWebpackPlugin({
+	   template:'./src/index.html'
+	})
+    ]
+13、编译查看结果，是否自动生成了基于模版的html文件  type index.html
+14、增加HTMLwebpackplugin的属性，主要有title, hash, minify, chunks。
+    编写webpack.config.js文件
+    plugins: [
+	new HtmlWebpackPlugin({
+             template:'./src/index.html',
+	     hash:true,
+	     title:"zhangsan",
+	     minify:{//压缩
+		collapseWhitespace:true
+	     },
+	     // 选择包含的文件，选你需要的
+	     chunks:['es6']
+	})
+     ]
+     index中调用title: <%= htmlWebpackPlugin.options.title %>
+     hash:为文件名加hash
+     minify:压缩
+     chunks:指定该html模板包含的js文件，不指定的话包含所有的入口文件
+15、多个模板，多个插件实例
+     plugins: [
+	new HtmlWebpackPlugin({
+		template:'./src/index.html',
+		hash:true,
+		title:"zhangsan",
+		minify:{//压缩
+			collapseWhitespace:true
+		},
+		// 选择包含的文件，选你需要的
+		chunks:['es6']
+	}),
+	new HtmlWebpackPlugin({
+		filename:'index2.html',
+		template:'./src/index2.html',
+		hash:true,
+		title:"lisi",
+		minify:{//压缩
+			collapseWhitespace:true
+		},
+		// 选择包含的文件，选你需要的
+		chunks:['index']
+	})
+    ]
+
+16、loader加载器
+    安装css-loader：npm install --save-d css-loader
+    安装style-loader：npm install --save-d style-loader
+    在src下创建css文件，如a.css,
+    在js文件如index.js中引用css文件  import './a.css' 或 import css from './a.css'
+    在webpack.config.js文件中增加loader的配置：
+    module: {
+	 rules: [
+	   {
+	      test: /\.css$/,
+	      use: [
+	         { loader: "style-loader" },
+	         { loader: "css-loader" }
+	        ]
+	    }
+	   ]
+	}
+
+17、webpack-dev-server
+    安装：npm install --save-d webpack-dev-server
+    启动：webpack-dev-server
+    如果不能正常启动，运行：npx webpack-dev-server
+    再不能启动，运.\node_modules\.
+    如启动成功，http://localhost:+（端口号）即可访问网页
+    配置（非必须）
+    devServer:{
+	  contentBase:path.join(__dirname,"dist"),
+	  compress:true,//开始gzip模式
+	  port:9000,//服务端口号
+	  watchOptions:{//监听模式自动刷新
+	  	poll:true
+	  }
+	}
+
+
+18、webpack.config.js参考
+const webpack=require('webpack');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+    //entry:['./src/index.js','./src/es6.js'],//entry为数组，则多入口一出口
+    entry:{//多入口
+    	index:'./src/index.js',
+    	es6:'./src/es6.js'
+    },
+    output:{
+        path:path.resolve(__dirname,'dist'),
+        filename:'[name]-bundle.js' // 表示输出的js文件名
+    },
+    module: {
+     rules: [
+      {
+        test: /\.css$/,
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader" }
+        ]
+      }
+    ]
+  },
+  devServer: {
+        contentBase: path.join(__dirname, "dist"),
+        compress: true, //开始 gzip模式
+        port: 9000, // 服务端口hao
+        watchOptions: {//监听模式自动刷新
+            poll: true
+        }},
+    plugins: [
+      new HtmlWebpackPlugin({
+      	template: './src/index.html' ,
+      	hash:true,
+      	title:"YuanLei",
+      	//minify:{ collapseWhitespace:true},
+      	chunks:['es6']
+}),
+      new HtmlWebpackPlugin({
+      	template: './src/index2.html' ,
+      	hash:true,
+      	filename:"a.html",
+      	title:"diergemoban",
+      	//minify:{ collapseWhitespace:true},
+      	chunks:['index']
+})
+ ]
+
+
+}
+
+19、其他
+    import style from './css/main.css'
+    常用插件
+    利用extract-text-webpack-plugin  分离css到独立文件，    借助Eslint自动代码规范检测及格式化
+    常用loader:
+    file-loader  url-loader  sass-loader
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
